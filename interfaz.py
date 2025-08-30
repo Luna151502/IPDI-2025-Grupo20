@@ -6,18 +6,12 @@ from PIL import Image, ImageTk
 
 ruta_img=  None
 
-carpeta_salida= r"C:\Users\Liz\proyecto1\image"
+#carpeta_salida= r"C:\Users\Liz\proyecto1\image"
 
 app =tk.Tk()
 app.geometry('800x600')
 app.configure(bg='beige')
 button_font=('Verdana', 10, 'bold')
-
-#Ventana menu
-#v =tk.Tk()
-#v.geometry('300x300')
-#v.configure(bg='ghostwhite')
-#button_font=('Verdana', 10, 'bold')
 
 def cargar():
     global ruta_img
@@ -27,10 +21,9 @@ def cargar():
     
     if archivo:
         # Abrir y mostrar imagen en la ventana
-        ruta_img = archivo
         label_info.config(text=f"Imagen seleccionada:")
-        img = Image.open(archivo)
-        img = img.resize((300, 300))
+        ruta_img = Image.open(archivo)
+        img = ruta_img.resize((300, 300))
         img_tk = ImageTk.PhotoImage(img)
         
         label_img.config(image=img_tk)
@@ -39,8 +32,7 @@ def cargar():
 def pasar():
     global ruta_img
     if ruta_img:
-        img = Image.open(ruta_img)
-        img = img.resize((300, 300))
+        img = ruta_img.resize((300, 300))
         img_tk = ImageTk.PhotoImage(img)
         label_img2.config(image=img_tk)
         label_img2.image = img_tk  # mantener referencia
@@ -50,11 +42,25 @@ def pasar():
 def guardar():
     global ruta_img
     if ruta_img:
+        ruta_guardado = filedialog.asksaveasfilename(
+            defaultextension=".png",
+            filetypes=[
+                ("png", "*.png"),
+                ("bmp", "*.bmp"),
+                ("tiff", "*.tiff")
+            ],
+            title="Guardar imagen procesada"
+        )
+        if ruta_guardado:
+            try:
+                ruta_img.save(ruta_guardado)
+                label_info.config(text=f"Imagen guardada en:\n{ruta_guardado}")
+            except Exception as e:
+                print(f"Error al guardar la imagen: {e}")
         #os.makedirs(carpeta_salida,exist_ok=True)
-        nombre_archivo = os.path.basename(ruta_img)
-        destino = os.path.join(carpeta_salida, nombre_archivo)
-        shutil.copy(ruta_img, destino) #copia 
-        label_info.config(text=f"Imagen guardada en:\n{destino}")
+        #nombre_archivo = os.path.basename(ruta_img)
+        #destino = os.path.join(carpeta_salida, nombre_archivo)
+        #shutil.copy(ruta_img, destino) #copia 
     else:
         label_info.config(text='No se ha seleccionado ninguna imagen')
 
