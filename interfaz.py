@@ -1,99 +1,118 @@
 import tkinter as tk
-import os
-import shutil
 from tkinter import filedialog
 from PIL import Image, ImageTk
 
-ruta_img=  None
-
-#carpeta_salida= r"C:\Users\Liz\proyecto1\image"
-
-app =tk.Tk()
-app.geometry('800x600')
-app.configure(bg='beige')
-button_font=('Verdana', 10, 'bold')
+imagen_original = None
+imagen_procesada = None
+ANCHO_PANEL = 400
+ALTO_PANEL = 400
 
 def cargar():
-    global ruta_img
-    archivo = filedialog.askopenfilename(
-        filetypes=[("Imágenes", "*.jpg *.jpeg *.png *.gif *.bmp")]
+    global imagen_original
+    ruta = filedialog.askopenfilename(
+        title="Seleccionar imagen",
+        filetypes=[("Imágenes", "*.png *.jpg *.jpeg *.bmp *.gif")]
     )
-    
-    if archivo:
-        # Abrir y mostrar imagen en la ventana
-        label_info.config(text=f"Imagen seleccionada:")
-        ruta_img = Image.open(archivo)
-        img = ruta_img.resize((300, 300))
-        img_tk = ImageTk.PhotoImage(img)
-        
-        label_img.config(image=img_tk)
-        label_img.image = img_tk
+    if ruta:
+        imagen_original = Image.open(ruta)
+        imagen_redimensionada = imagen_original.resize((ANCHO_PANEL, ALTO_PANEL))
+        imagen_tk = ImageTk.PhotoImage(imagen_redimensionada)
+        label_img.config(image=imagen_tk)
+        label_img.image = imagen_tk
+        label_info.config(text="imagen seleccionada", fg="green", font=('Verdana', 9, 'underline'),anchor='center',justify='center')
+
+        # Ocultar el mensaje después de 3000 milisegundos (3 segundos)
+        label_info.after(1000, lambda: label_info.config(text=""))
 
 def pasar():
-    global ruta_img
-    if ruta_img:
-        img = ruta_img.resize((300, 300))
-        img_tk = ImageTk.PhotoImage(img)
+    global imagen_original, imagen_procesada
+    if imagen_original:
+        imagen_procesada = imagen_original.resize((ANCHO_PANEL, ALTO_PANEL))
+        img_tk = ImageTk.PhotoImage(imagen_procesada)
         label_img2.config(image=img_tk)
-        label_img2.image = img_tk  # mantener referencia
+        label_img2.image = img_tk
     else:
-        label_info.config(text="Primero seleccione una imagen")
-        
+        label_info.config(text="Primero seleccione una imagen", fg="red", font=('Verdana', 9, 'underline'))
+
 def guardar():
-    global ruta_img
-    if ruta_img:
+    if imagen_procesada:
         ruta_guardado = filedialog.asksaveasfilename(
             defaultextension=".png",
             filetypes=[
-                ("png", "*.png"),
-                ("bmp", "*.bmp"),
-                ("tiff", "*.tiff")
+                ("PNG", "*.png"),
+                ("BMP", "*.bmp"),
+                ("TIFF", "*.tiff")
             ],
             title="Guardar imagen procesada"
         )
         if ruta_guardado:
             try:
-                ruta_img.save(ruta_guardado)
-                label_info.config(text=f"Imagen guardada en:\n{ruta_guardado}")
+                imagen_procesada.save(ruta_guardado)
+                print(f"Imagen guardada en: {ruta_guardado}")
             except Exception as e:
                 print(f"Error al guardar la imagen: {e}")
-        #os.makedirs(carpeta_salida,exist_ok=True)
-        #nombre_archivo = os.path.basename(ruta_img)
-        #destino = os.path.join(carpeta_salida, nombre_archivo)
-        #shutil.copy(ruta_img, destino) #copia 
-    else:
-        label_info.config(text='No se ha seleccionado ninguna imagen')
 
 def salir():
     app.destroy()
 
-boton=tk.Button(app, text='Cargar imagen', command=cargar, fg='black')
-boton.pack()
-boton.place(x=350, y=450)
+# Ventana principal
+app = tk.Tk()
+app.title("Visualizador con Paneles")
+app.configure(bg='beige')
+app.geometry("1100x450")
 
-boton2=tk.Button(app, text='Pasar imagen', command=pasar, fg='black')
-boton2.pack()
-boton2.place(x=350, y=500)
+# Configurar columnas para estructura fija
+app.grid_columnconfigure(0, weight=0)
+app.grid_columnconfigure(1, weight=0)
+app.grid_columnconfigure(2, weight=0)
 
-boton3=tk.Button(app, text='Salir', command=salir, fg='red')
-boton3.pack()
-boton3.place(x=375, y=550)
+# Etiqueta informativa superior
+label_info = tk.Label(app, text="Seleccione una imagen para empezar", bg='beige', font=('Verdana', 9, 'underline'))
+label_info.grid(row=0, column=0, columnspan=3, pady=5)
 
-boton4=tk.Button(app, text='Guardar', command=guardar, fg='green', pady=10, width=20)
-boton4.pack()
-boton4.place(x=550, y=500)
+# Panel izquierdo (imagen original)
+panel_izquierdo = tk.Frame(app, width=400, height=400, bg='white')
+panel_izquierdo.grid(row=1, column=0, padx=10, pady=10)
+panel_izquierdo.grid_propagate(False)
+label_img = tk.Label(panel_izquierdo, bg='white')
+label_img.pack(expand=True, fill='both')
 
-# Info de imagen seleccionada
-label_info = tk.Label(app, text="Ninguna imagen seleccionada")
-label_info.pack(pady=5)
+# Panel central (botones)
+panel_central = tk.Frame(app, width=200, height=400, bg='beige')
+panel_central.grid(row=1, column=1, padx=10, pady=10)
+panel_central.grid_propagate(False)
 
-label_img = tk.Label(app)
-label_img.pack()
-label_img.place(x=100,y=50)
+# Contenedor interno para centrar los botones
+contenedor_botones = tk.Frame(panel_central, bg='beige')
+contenedor_botones.place(relx=0.5, rely=0.5, anchor='center')  # Centrado absoluto
 
-label_img2 = tk.Label(app)
-label_img2.pack()
-label_img2.place(x=450,y=50)
+# Botones
+boton_cargar = tk.Button(contenedor_botones, text="Cargar imagen", command=cargar,
+                         font=('Verdana', 10), fg='black', width=20)
+boton_cargar.pack(pady=10)
 
+boton_pasar = tk.Button(contenedor_botones, text="Pasar imagen", command=pasar,
+                        font=('Verdana', 10), fg='black', width=20)
+boton_pasar.pack(pady=10)
+
+boton_guardar = tk.Button(contenedor_botones, text="Guardar", command=guardar,
+                          font=('Verdana', 10), fg='green', width=20)
+boton_guardar.pack(pady=10)
+
+boton_salir = tk.Button(contenedor_botones, text="Salir", command=salir,
+                        font=('Verdana', 10), fg='red', width=20)
+boton_salir.pack(pady=10)
+
+# Panel derecho (imagen procesada)
+panel_derecho = tk.Frame(app, width=400, height=400, bg='white')
+panel_derecho.grid(row=1, column=2, padx=10, pady=10)
+panel_derecho.grid_propagate(False)
+label_img2 = tk.Label(panel_derecho, bg='white')
+label_img2.pack(expand=True, fill='both')
+
+# Separación inferior
+espacio_inferior = tk.Frame(app, height=30, bg='beige')
+espacio_inferior.grid(row=2, column=0, columnspan=3)
 
 app.mainloop()
+
